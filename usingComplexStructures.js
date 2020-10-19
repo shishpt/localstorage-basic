@@ -1,41 +1,90 @@
-const people = [
-  // {
-  //   name: "Smári",
-  //   birthYear: 2002,
-  // },
-  // {
-  //   name: "Pedro",
-  //   birthYear: 2003,
-  // },
-];
+function getLocals() {
+  const theLocalsStr = localStorage.getItem("theLocals");
+  const theLocals = JSON.parse(theLocalsStr);
+  return theLocals;
+}
 
+function addLocal(newLocal) {
+  const theLocals = getLocals();
+  theLocals.push(newLocal);
+  // Update localStorage
+  const theLocalsStr = JSON.stringify(theLocals);
+  localStorage.setItem("theLocals", theLocalsStr);
+}
+
+function removeLocal(localIndex) {
+  const theLocals = getLocals();
+  theLocals.splice(localIndex, 1);
+  // Update localStorage
+  const theLocalsStr = JSON.stringify(theLocals);
+  localStorage.setItem("theLocals", theLocalsStr);
+}
+
+// Shows all people present in the people array
+// in the .people-list ul element
 function renderList() {
-  const peopleEl = document.querySelector(".people");
+  const peopleList = document.querySelector(".people-list");
+  const theLocals = getLocals();
 
   // Clear list
-  peopleEl.innerHTML = "";
+  peopleList.innerHTML = "";
 
-  for (const person of people) {
+  if (theLocals.length === 0) {
+    peopleList.innerHTML = "No people found";
+    return;
+  }
+
+  for (let i = 0; i < theLocals.length; i++) {
+    const local = theLocals[i];
     // <li>Pedro / 2003</li>
 
-    const li = document.createElement("li");
-    li.innerHTML = person.name + " / " + person.birthYear;
+    // <li>
+    //   <span>Pedro / 2003</span> <button>Remove</button>
+    // </li>
 
-    peopleEl.appendChild(li);
+    const li = document.createElement("li");
+    const span = document.createElement("span");
+    const button = document.createElement("button");
+
+    span.innerHTML = local.name + " / " + local.birthYear;
+    li.appendChild(span);
+
+    button.innerHTML = "Remove";
+    li.appendChild(button);
+
+    button.addEventListener("click", function () {
+      removeLocal(i);
+      renderList();
+    });
+
+    peopleList.appendChild(li);
   }
 }
 
-// Add a person
-let person = {
-  name: "Hulda",
-  birthYear: 1865,
-};
-people.push(person);
-renderList();
+// Add a submit event listener for the form
+const form = document.querySelector(".add-person-form");
+const handleSubmit = function (e) {
+  e.preventDefault();
 
-let person = {
-  name: "Frank",
-  birthYear: 1900,
+  const formEl = e.target;
+
+  // Create a new local
+  const newLocal = {
+    name: formEl.name.value,
+    birthYear: formEl.birthYear.value,
+  };
+
+  // Push new person to people array
+  addLocal(newLocal);
+
+  // Make appear in the DOM
+  renderList();
+
+  // Clean up fields
+  formEl.name.value = "";
+  formEl.birthYear.value = "";
 };
-people.push(person);
+form.addEventListener("submit", handleSubmit);
+
+// Start
 renderList();
